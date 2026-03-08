@@ -3,21 +3,11 @@
 ## Overview
 
 This project implements a **semantic search system** built on the **20 Newsgroups dataset**.
-Instead of traditional keyword matching, the system retrieves documents based on **semantic similarity** using vector embeddings.
+Instead of relying on traditional keyword-based search, the system retrieves documents based on **semantic similarity** using vector embeddings.
 
-The system also integrates **fuzzy clustering** and a **semantic caching layer** to improve retrieval efficiency and demonstrate real-world ML system design.
+The system also integrates **fuzzy clustering** and a **semantic caching layer** to improve search efficiency and demonstrate the design of a real-world ML system.
 
-The entire system is exposed through a **FastAPI service**, allowing queries to be sent through a REST API.
-
----
-
-# Key Features
-
-• Semantic document retrieval using **vector embeddings**
-• Fast similarity search using **FAISS vector database**
-• **Fuzzy clustering** using Gaussian Mixture Model
-• **Semantic cache** that detects similar queries using cosine similarity
-• REST API service implemented using **FastAPI**
+The application is exposed through a **FastAPI service**, allowing users to query the system through REST endpoints.
 
 ---
 
@@ -29,7 +19,7 @@ SentenceTransformer Embedding Model
 ↓
 Semantic Cache Check
 ↓
-FAISS Vector Search
+Vector Similarity Search (FAISS)
 ↓
 Fuzzy Clustering (Gaussian Mixture Model)
 ↓
@@ -39,9 +29,9 @@ API Response
 
 # Dataset
 
-This project uses the **20 Newsgroups dataset**, which contains approximately **20,000 documents across 20 categories**.
+This project uses the **20 Newsgroups Dataset**, a widely used benchmark dataset for text classification and retrieval tasks.
 
-Example categories include:
+The dataset contains approximately **20,000 documents across 20 topic categories**, including:
 
 * sci.space
 * comp.graphics
@@ -49,32 +39,46 @@ Example categories include:
 * talk.politics.misc
 * comp.sys.ibm.pc.hardware
 
-The dataset is useful for benchmarking **text classification and retrieval systems**.
+Dataset Source:
+
+https://archive.ics.uci.edu/
+
+Download link:
+
+[https://archive.ics.uci.edu/dataset/113/twenty+newsgroups]
+
+After downloading, extract the dataset into the project directory so that the folder structure looks like:
+
+```
+semantic-search-system/
+│
+├── 20_newsgroups/
+├── app/
+├── scripts/
+```
 
 ---
 
 # Technologies Used
 
-Python
-SentenceTransformers
-FAISS
-Scikit-learn
-FastAPI
-NumPy
+* Python
+* SentenceTransformers
+* FAISS
+* Scikit-learn
+* FastAPI
+* NumPy
 
 ---
 
 # Embedding Model
 
-The system uses:
+The system uses the **SentenceTransformer model `all-MiniLM-L6-v2`**.
 
-**SentenceTransformer – all-MiniLM-L6-v2**
+Reasons for choosing this model:
 
-Reasons for selecting this model:
-
-* lightweight and efficient
-* strong performance on semantic similarity tasks
-* suitable for search systems
+* Lightweight and efficient
+* Strong semantic representation for sentences
+* Suitable for similarity search tasks
 
 Each document is converted into a **384-dimensional embedding vector**.
 
@@ -86,53 +90,63 @@ The embeddings are stored in **FAISS (Facebook AI Similarity Search)**.
 
 FAISS enables:
 
-* efficient nearest-neighbor search
-* fast similarity queries over large vector datasets
-* scalable semantic retrieval
+* Efficient nearest-neighbor search
+* Fast similarity queries across large datasets
+* Scalable semantic retrieval
+
+When a user query is received, its embedding is compared against all stored vectors to retrieve the **most semantically similar documents**.
 
 ---
 
 # Fuzzy Clustering
 
-To analyze topic structure in the dataset, the system uses a **Gaussian Mixture Model (GMM)**.
+To analyze topic structure within the dataset, the system uses a **Gaussian Mixture Model (GMM)**.
 
-Unlike hard clustering algorithms such as K-Means, GMM provides **probabilistic cluster memberships**.
+Unlike hard clustering algorithms like K-Means, GMM provides **probabilistic cluster memberships**.
 
 Example:
 
-Document about space shuttle propulsion
+A document discussing space shuttle propulsion may belong to:
 
 Cluster 5 → 0.52
 Cluster 12 → 0.31
 Cluster 3 → 0.17
 
-This reflects real-world scenarios where documents may belong to multiple topics.
+This reflects real-world scenarios where documents may belong to multiple related topics.
 
 ---
 
 # Semantic Cache
 
-Traditional caching works only for **identical queries**.
+Traditional caching systems only work for **identical queries**.
 
 This project implements a **semantic cache**, which stores previous queries and detects **similar queries using cosine similarity** between embeddings.
 
 Example:
 
-Query 1:
-"space shuttle launch"
+Query 1
 
-Query 2:
-"space shuttle mission"
+```
+space shuttle launch
+```
 
-Even though the queries are not identical, their embeddings are similar, allowing the cached result to be reused.
+Query 2
 
-This reduces computation and improves system performance.
+```
+space shuttle mission
+```
+
+Even though the queries are not identical, their embeddings are similar, allowing the system to reuse cached results.
+
+This reduces repeated computation and improves performance.
 
 ---
 
 # API Endpoints
 
 The system exposes three REST endpoints.
+
+---
 
 ## POST /query
 
@@ -163,11 +177,30 @@ Example response:
 
 Returns statistics about the semantic cache.
 
+Example response:
+
+```json
+{
+  "total_entries": 3,
+  "hit_count": 1,
+  "miss_count": 2,
+  "hit_rate": 0.33
+}
+```
+
 ---
 
 ## DELETE /cache
 
-Clears all cached queries.
+Clears the semantic cache.
+
+Example response:
+
+```json
+{
+  "message": "cache cleared"
+}
+```
 
 ---
 
@@ -175,28 +208,26 @@ Clears all cached queries.
 
 Clone the repository:
 
-```bash
+```
 git clone https://github.com/YOUR_USERNAME/semantic-search-system.git
 cd semantic-search-system
 ```
 
 Create a virtual environment:
 
-```bash
+```
 python -m venv venv
 ```
 
-Activate the environment:
+Activate the environment (Windows):
 
-Windows:
-
-```bash
+```
 venv\Scripts\activate
 ```
 
 Install dependencies:
 
-```bash
+```
 pip install -r requirements.txt
 ```
 
@@ -204,30 +235,34 @@ pip install -r requirements.txt
 
 # Build the Index
 
-Generate embeddings and clustering model:
+Generate document embeddings and clustering model:
 
-```bash
+```
 python scripts/build_index.py
 ```
 
 This step creates:
 
+```
 vector_store.pkl
 cluster_model.pkl
+```
 
 ---
 
 # Run the API
 
-Start the FastAPI service:
+Start the FastAPI server:
 
-```bash
+```
 uvicorn app.main:app --reload
 ```
 
-Open the API documentation:
+Open the interactive API documentation:
 
+```
 http://127.0.0.1:8000/docs
+```
 
 ---
 
@@ -235,13 +270,13 @@ http://127.0.0.1:8000/docs
 
 Possible enhancements include:
 
-* approximate FAISS indexes for larger datasets
-* persistent cache storage
-* cluster visualization
-* Docker containerization for deployment
+* using approximate FAISS indexes for larger datasets
+* adding persistent cache storage
+* visualizing cluster distributions
+* deploying the system using Docker
 
 ---
 
 # Author
 
-BATTULA GURUPRASAD SPOORTH – Semantic Search System
+AI/ML Engineer Project – Semantic Search System
