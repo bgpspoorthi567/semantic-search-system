@@ -279,4 +279,5 @@ Possible enhancements include:
 
 # Author
 
-AI/ML Engineer Project – Semantic Search System
+BATTULA GURUPRASAD SPOORTHI – Semantic Search System
+
